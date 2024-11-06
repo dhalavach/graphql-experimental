@@ -1,0 +1,289 @@
+const neo4j = require('neo4j-driver');
+
+// Initialize the Neo4j driver
+const driver = neo4j.driver(
+  'neo4j://localhost:7687', // Neo4j connection string (update this if needed)
+  neo4j.auth.basic('neo4j', 'Casablanca') // plain text password - I know, I know ...
+);
+
+// JSON data (replace this with a require statement if loading from a file)
+const data = {
+  nodes: [
+    {
+      id: 'sensor_9876',
+      labels: ['Sensor'],
+      properties: {
+        sensorId: 'sensor_9876',
+        alias: 'flow_sensor_1',
+        type: 'Flow Sensor',
+        units: 'US gal/min',
+        calibrationDate: '2024-09-10',
+        accuracy: 0.98,
+        active: true,
+      },
+    },
+    {
+      id: 'sensor_5555',
+      labels: ['Sensor'],
+      properties: {
+        sensorId: 'sensor_5555',
+        alias: 'temp_sensor',
+        type: 'Temperature Sensor',
+        units: 'Celsius',
+        calibrationDate: '2024-08-01',
+        accuracy: 0.95,
+        active: true,
+      },
+    },
+    {
+      id: 'sensor_7890',
+      labels: ['Sensor'],
+      properties: {
+        sensorId: 'sensor_7890',
+        alias: 'pressure_sensor',
+        type: 'Pressure Sensor',
+        units: 'psi',
+        calibrationDate: '2024-10-01',
+        accuracy: 0.99,
+        active: false,
+      },
+    },
+    {
+      id: 'equipment_1234',
+      labels: ['Equipment', 'Boiler'],
+      properties: {
+        equipmentId: 'equipment_1234',
+        type: 'Boiler',
+        capacity: '5000 gallons',
+        location: 'Plant 1',
+        status: 'Active',
+      },
+    },
+    {
+      id: 'equipment_5678',
+      labels: ['Equipment', 'Cooler'],
+      properties: {
+        equipmentId: 'equipment_5678',
+        type: 'Cooler',
+        capacity: '3000 cubic meters',
+        location: 'Plant 2',
+        status: 'Inactive',
+      },
+    },
+    {
+      id: 'equipment_9101',
+      labels: ['Equipment', 'Compressor'],
+      properties: {
+        equipmentId: 'equipment_9101',
+        type: 'Compressor',
+        inletPressure: '14.7 psi',
+        outletPressure: '100 psi',
+        powerConsumption: '200 kW',
+        location: 'Plant 1',
+        status: 'Active',
+      },
+    },
+    {
+      id: 'message_001',
+      labels: ['Message'],
+      properties: {
+        messageId: 'msg_001',
+        content: 'Sensor reading for flow rate is above normal threshold.',
+        timestamp: '2024-11-06T08:30:00',
+        severity: 'Warning',
+        relatedSensor: 'sensor_9876',
+      },
+    },
+    {
+      id: 'message_002',
+      labels: ['Message'],
+      properties: {
+        messageId: 'msg_002',
+        content: 'Temperature sensor needs recalibration.',
+        timestamp: '2024-11-05T15:45:00',
+        severity: 'Info',
+        relatedSensor: 'sensor_5555',
+      },
+    },
+    {
+      id: 'message_003',
+      labels: ['Message'],
+      properties: {
+        messageId: 'msg_003',
+        content: 'Pressure reading below expected level.',
+        timestamp: '2024-11-04T13:15:00',
+        severity: 'Critical',
+        relatedSensor: 'sensor_7890',
+      },
+    },
+    {
+      id: 'facility_plant_1',
+      labels: ['Facility'],
+      properties: {
+        facilityId: 'plant_1',
+        name: 'Gas Processing Plant 1',
+        location: 'Field A',
+        capacity: '20000 mcf/day',
+      },
+    },
+    {
+      id: 'facility_plant_2',
+      labels: ['Facility'],
+      properties: {
+        facilityId: 'plant_2',
+        name: 'Gas Processing Plant 2',
+        location: 'Field B',
+        capacity: '15000 mcf/day',
+      },
+    },
+  ],
+  relationships: [
+    {
+      id: 'rel_1',
+      type: 'CONNECTED_TO',
+      startNode: 'sensor_9876',
+      endNode: 'equipment_1234',
+      properties: {
+        description: 'Flow sensor connected to boiler',
+      },
+    },
+    {
+      id: 'rel_2',
+      type: 'CONNECTED_TO',
+      startNode: 'sensor_5555',
+      endNode: 'equipment_5678',
+      properties: {
+        description: 'Temperature sensor connected to cooler',
+      },
+    },
+    {
+      id: 'rel_3',
+      type: 'CONNECTED_TO',
+      startNode: 'sensor_7890',
+      endNode: 'equipment_9101',
+      properties: {
+        description: 'Pressure sensor connected to compressor',
+      },
+    },
+    {
+      id: 'rel_4',
+      type: 'LOCATED_AT',
+      startNode: 'equipment_1234',
+      endNode: 'facility_plant_1',
+      properties: {
+        description: 'Boiler located at Plant 1',
+      },
+    },
+    {
+      id: 'rel_5',
+      type: 'LOCATED_AT',
+      startNode: 'equipment_5678',
+      endNode: 'facility_plant_2',
+      properties: {
+        description: 'Cooler located at Plant 2',
+      },
+    },
+    {
+      id: 'rel_6',
+      type: 'LOCATED_AT',
+      startNode: 'equipment_9101',
+      endNode: 'facility_plant_1',
+      properties: {
+        description: 'Compressor located at Plant 1',
+      },
+    },
+    {
+      id: 'rel_7',
+      type: 'GENERATED_BY',
+      startNode: 'message_001',
+      endNode: 'sensor_9876',
+      properties: {
+        description: 'Message generated by flow sensor',
+      },
+    },
+    {
+      id: 'rel_8',
+      type: 'GENERATED_BY',
+      startNode: 'message_002',
+      endNode: 'sensor_5555',
+      properties: {
+        description: 'Message generated by temperature sensor',
+      },
+    },
+    {
+      id: 'rel_9',
+      type: 'GENERATED_BY',
+      startNode: 'message_003',
+      endNode: 'sensor_7890',
+      properties: {
+        description: 'Message generated by pressure sensor',
+      },
+    },
+    {
+      id: 'rel_10',
+      type: 'PART_OF',
+      startNode: 'sensor_9876',
+      endNode: 'facility_plant_1',
+      properties: {
+        description: 'Sensor is part of Plant 1',
+      },
+    },
+    {
+      id: 'rel_11',
+      type: 'PART_OF',
+      startNode: 'sensor_5555',
+      endNode: 'facility_plant_2',
+      properties: {
+        description: 'Sensor is part of Plant 2',
+      },
+    },
+  ],
+};
+
+async function importData() {
+  const session = driver.session();
+
+  try {
+    // First, create all nodes
+    for (const node of data.nodes) {
+      const { id, labels, properties } = node;
+
+      // Create a Cypher query to create the node with labels and properties
+      const query = `
+        MERGE (n:${labels.join(':')} {id: $id})
+        SET n += $properties
+      `;
+
+      await session.run(query, { id, properties });
+      console.log(`Created node with ID: ${id}`);
+    }
+
+    // Then, create all relationships
+    for (const relationship of data.relationships) {
+      const { type, startNode, endNode, properties } = relationship;
+
+      // Create a Cypher query to create the relationship between nodes
+      const query = `
+        MATCH (a {id: $startNodeId}), (b {id: $endNodeId})
+        MERGE (a)-[r:${type}]->(b)
+        SET r += $properties
+      `;
+
+      await session.run(query, {
+        startNodeId: startNode,
+        endNodeId: endNode,
+        properties,
+      });
+      console.log(`Created relationship of type ${type} from ${startNode} to ${endNode}`);
+    }
+  } catch (error) {
+    console.error('Error importing data:', error);
+  } finally {
+    await session.close();
+  }
+
+  await driver.close();
+}
+
+// Run the import function
+importData().then(() => console.log('Data import complete.'));

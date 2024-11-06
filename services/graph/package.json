@@ -1,0 +1,14 @@
+{
+  "name": "graph",
+  "version": "1.0.0",
+  "description": "graph DB management service",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dmitry Halavach",
+  "license": "MIT",
+  "dependencies": {
+    "neo4j-driver": "^5.26.0"
+  }
+}
