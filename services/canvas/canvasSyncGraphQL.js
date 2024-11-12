@@ -1,34 +1,45 @@
-const { ApolloServer } = require('@apollo/server');
-const { Neo4jGraphQL } = require('@neo4j/graphql');
-const neo4j = require('neo4j-driver');
-const { makeExecutableSchema } = require('@graphql-tools/schema');
-const { WebSocketServer } = require('ws');
-const { useServer } = require('graphql-ws/lib/use/ws');
-const { createServer } = require('http');
-const { execute, subscribe } = require('graphql');
-const { PubSub } = require('graphql-subscriptions');
+import { ApolloServer } from '@apollo/server';
+import { Neo4jGraphQL } from '@neo4j/graphql';
+import neo4j from 'neo4j-driver';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { createServer } from 'http';
+import { execute, subscribe } from 'graphql';
+import { PubSub } from 'graphql-subscriptions';
+import express from 'express';
+import http from 'http';
+import { expressMiddleware } from '@apollo/server/express4';
+
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
+import path from 'path';
 
 // Initialize Neo4j Driver
 const driver = neo4j.driver('neo4j://localhost:7687', neo4j.auth.basic('neo4j', 'Casablanca'));
 
 // Define GraphQL schema for equipment and relationships
-const typeDefs = `
-  type Equipment {
-    id: ID!
-    name: String
-    type: String
-    status: String
-  }
+// const typeDefs = `
+//   type Equipment {
+//     id: ID!
+//     name: String
+//     type: String
+//     status: String
+//   }
 
-  type Subscription {
-    equipmentUpdated: Equipment
-  }
+//   type Subscription {
+//     equipmentUpdated: Equipment
+//   }
 
-  type Query {
-    equipment(id: ID!): Equipment
-    allEquipment: [Equipment]
-  }
-`;
+//   type Query {
+//     equipment(id: ID!): Equipment
+//     allEquipment: [Equipment]
+//   }
+// `;
+
+const typeDefs = loadSchemaSync(path.resolve('./services/canvas/schema.graphql'), {
+  loaders: [new GraphQLFileLoader()],
+});
 
 // Setup PubSub instance for subscription publishing
 const pubsub = new PubSub();
@@ -59,7 +70,9 @@ const resolvers = {
 // Create Apollo Server with WebSocket Subscriptions
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 const server = new ApolloServer({ schema });
-const httpServer = createServer();
+const app = express();
+
+const httpServer = http.createServer(app);
 const wsServer = new WebSocketServer({ server: httpServer, path: '/graphql' });
 
 // Use WebSocket server with Apollo for Subscriptions
@@ -80,11 +93,32 @@ function simulateDataChange() {
 }
 
 // Start HTTP and WebSocket Servers
+// (async () => {
+//   await server.start();
+//   server.applyMiddleware({ app: httpServer });
+//   httpServer.listen(4000, () => {
+//     console.log(`Server is running at http://localhost:4000${server.graphqlPath}`);
+//   });
+//   simulateDataChange(); // Simulate database updates
+// })();
+
 (async () => {
-  await server.start();
-  server.applyMiddleware({ app: httpServer });
-  httpServer.listen(4000, () => {
-    console.log(`Server is running at http://localhost:4000${server.graphqlPath}`);
+  await server.start(); // Start the Apollo Server
+
+  // Manually connect Apollo Server to the Express app
+  app.use('/graphql', (req, res) => {
+    //return server.createGraphQLHandler()(req, res);  // Use the createGraphQLHandler() method
+    return expressMiddleware(server);
   });
+
+  // Start the HTTP server
+  httpServer.listen(4000, () => {
+    console.log(`Server is running at http://localhost:4000/graphql`);
+  });
+
+  // WebSocket server connection for subscriptions
+  // Setup WebSocket server to handle GraphQL subscriptions
+  // wsServer and Apollo subscriptions configuration would go here.
+
   simulateDataChange(); // Simulate database updates
 })();
