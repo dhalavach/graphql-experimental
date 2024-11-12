@@ -1,0 +1,183 @@
+# Reusable Types
+union FloatOrString = Float | String
+
+scalar PercentType
+
+type PositionDTO {
+  x: Float!
+  y: Float!
+}
+
+# Common Mixins for Metadata, Position, and Flow Relationships
+interface Metadata {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+}
+
+interface Position {
+  position: PositionDTO!
+}
+
+interface HasInput {
+  inputs: [String!]!
+}
+
+interface HasOutput {
+  outputs: [String!]!
+}
+
+# Abstract Classes
+interface Equipment implements Metadata & Position {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+}
+
+interface Process implements Metadata & Position & HasInput & HasOutput {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  inputs: [String!]!
+  outputs: [String!]!
+}
+
+interface Facility implements Equipment {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+}
+
+interface MeasurementDevice implements Equipment {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+}
+
+# Specific Classes with Attributes
+type StorageTank implements Facility {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  capacity: FloatOrString!
+  contents: String
+}
+
+type Separator implements Process {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  inputs: [String!]!
+  outputs: [String!]!
+  pressure: FloatOrString!
+  temperature: FloatOrString!
+  separation_efficiency: PercentType
+}
+
+type GasWell implements Equipment {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  pressure: FloatOrString!
+  flow_rate: FloatOrString!
+  depth: Float
+}
+
+type Compressor implements Equipment {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  inlet_pressure: FloatOrString!
+  outlet_pressure: FloatOrString!
+  power_consumption: FloatOrString
+}
+
+type GasProcessingPlant implements Facility {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  throughput_capacity: FloatOrString!
+  ngl_recovery_rate: PercentType
+}
+
+type NGLFractionationUnit implements Process {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  inputs: [String!]!
+  outputs: [String!]!
+  feed_rate: FloatOrString!
+  ethane_recovery_rate: PercentType
+  propane_recovery_rate: PercentType
+  reboiler_duty: FloatOrString
+}
+
+type Sensor implements MeasurementDevice {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  sensor_type: String!
+  reading: FloatOrString!
+  unit: String!
+  accuracy: PercentType
+}
+
+type Pump implements Equipment {
+  id: ID!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO!
+  flow_rate: FloatOrString!
+  power: FloatOrString
+  discharge_pressure: FloatOrString!
+}
+
+# Enums for Units
+enum PressureUnit {
+  PSI
+  BAR
+  PA
+  MPA
+}
+
+enum TemperatureUnit {
+  C
+  F
+  K
+}
+
+enum VolumeUnit {
+  BARREL
+  CUBIC_METER
+  LITER
+}
+
+enum FlowRateUnit {
+  M3_H
+  BBL_DAY
+  GPM
+}
