@@ -55,7 +55,8 @@ const resolvers = {
     },
     equipment: async (_, { id }) => {
       const session = driver.session();
-      const result = await session.run('MATCH (e:Equipment {id: $id}) RETURN e', { id });
+      //const result = await session.run('MATCH (n:Sensor {id: $id}) RETURN n', { id });
+      const result = await session.run('MATCH ((n)-[r]->(m) RETURN n, m, r');
       session.close();
       return result.records[0]?.get('e').properties;
     },
