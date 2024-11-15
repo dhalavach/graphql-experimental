@@ -1,20 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const fs = require('fs').promises;
 const yaml = require('js-yaml');
-const fs = require('fs');
 
 const app = express();
 app.use(bodyParser.json());
 
-// Load and parse the ontology file
-const ontologyFilePath = './equipment.yaml';
 let ontology;
 
-try {
-  ontology = yaml.load(fs.readFileSync(ontologyFilePath, 'utf8'));
-} catch (err) {
-  console.error('Failed to load ontology file:', err);
-  process.exit(1);
+// Asynchronous function to load the ontology file
+async function loadOntology(filePath) {
+  try {
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    return yaml.load(fileContent);
+  } catch (err) {
+    console.error('Failed to load ontology file:', err);
+    process.exit(1);
+  }
 }
 
 // Helper to validate an instance against the ontology
@@ -67,7 +69,7 @@ function validateInstance(instance, className) {
 }
 
 // Endpoint to validate an entity instance
-app.post('/validate', (req, res) => {
+app.post('/validate', async (req, res) => {
   const { instance, className } = req.body;
 
   if (!instance || !className) {
@@ -78,8 +80,18 @@ app.post('/validate', (req, res) => {
   res.json(result);
 });
 
-// Start the server
+// Start the server and load ontology
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Ontology validator running on http://localhost:${PORT}`);
-});
+const ontologyFilePath = './equipment.yaml';
+
+(async () => {
+  try {
+    ontology = await loadOntology(ontologyFilePath);
+    app.listen(PORT, () => {
+      console.log(`Ontology validator running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to initialize the service:', err);
+    process.exit(1);
+  }
+})();
