@@ -1,207 +1,137 @@
 export const schema = `
-# Queries
+  type Query {
+    entities(filter: EntityFilterInput): [Entity]
+    entityById(id: ID!): Entity
+    searchGraph(query: String!): [GraphEntity]
+  }
 
-type Query {
-  # Fetch all equipment, processes, or facilities with optional filtering
-  entities(filter: EntityFilterInput): [Entity]
+  type Mutation {
+    addEntity(
+      name: String!
+      type: String!
+      position: PositionInput
+      properties: [PropertyInput!]
+    ): Entity
+    updateEntity(
+      id: ID!
+      name: String
+      type: String
+      position: PositionInput
+      properties: [PropertyInput!]
+      attributes: AttributesInput
+    ): Entity
+    deleteEntity(id: ID!): Boolean
+    createLink(input: CreateLinkInput!): Link
+    updateLink(id: ID!, input: UpdateLinkInput!): Link
+    deleteLink(id: ID!): Boolean
+    applyChanges: Boolean
+  }
 
-  # Fetch a specific entity by ID
-  entityById(id: ID!): Entity
+  interface Entity {
+    id: ID!
+    name: String!
+    type: String!
+    description: String
+    position: Position
+    properties: [Property!]
+    links: [Link!]
+  }
 
-  # Fetch equipment templates
-  templates: [EquipmentTemplate]
+  type Equipment implements Entity {
+    id: ID!
+    name: String!
+    type: String!
+    description: String
+    position: Position
+    properties: [Property!]
+    links: [Link!]
+    attributes: Attributes
+  }
 
-  # Search the knowledge graph database for nodes and relationships
-  searchGraph(query: String!): [GraphEntity]
-}
+  type LinkEntity implements Entity {
+    id: ID!
+    name: String!
+    type: String!
+    description: String
+    position: Position
+    properties: [Property!]
+    links: [Link!]
+    source: ID!
+    target: ID!
+  }
 
-# Mutations
+  type GraphEntity {
+    id: ID!
+    name: String
+    type: String
+    properties: [Property!]
+  }
 
-type Mutation {
-  # Add a new equipment, process, or facility
-  addEntity(input: AddEntityInput!): Entity
+  type Link {
+    id: ID!
+    source: ID!
+    target: ID!
+    type: String!
+    properties: [Property!]
+  }
 
-  # Update an entity's properties or position
-  updateEntity(id: ID!, input: UpdateEntityInput!): Entity
+  type Property {
+    key: String!
+    value: String!
+  }
 
-  # Delete an entity
-  deleteEntity(id: ID!): Boolean
+  type Position {
+    x: Float!
+    y: Float!
+  }
 
-  # Create, update, or delete relationships (links) between entities
-  createLink(input: CreateLinkInput!): Link
-  updateLink(id: ID!, input: UpdateLinkInput!): Link
-  deleteLink(id: ID!): Boolean
+  input PositionInput {
+    x: Float!
+    y: Float!
+  }
 
-  # Import templates
-  importTemplates(input: [NewTemplateInput!]!): [EquipmentTemplate]
+  input PropertyInput {
+    key: String!
+    value: String!
+  }
 
-  # Apply staged changes
-  applyChanges: Boolean
-}
+  type Attributes {
+    flow_rate: String
+    power: String
+    discharge_pressure: String
+    pressure: String
+    temperature: String
+    efficiency: Float
+    capacity: String
+    contents: String
+  }
 
-# Base Types
+  input AttributesInput {
+    flow_rate: String
+    power: String
+    discharge_pressure: String
+    pressure: String
+    temperature: String
+    efficiency: Float
+    capacity: String
+    contents: String
+  }
 
-interface Entity {
-  id: ID!
-  name: String!
-  type: String!
-  description: String
-  position: Position
-  properties: [Property!]
-  links: [Link!]
-}
+  input CreateLinkInput {
+    source: ID!
+    target: ID!
+    type: String!
+    properties: [PropertyInput!]
+  }
 
-type Equipment implements Entity {
-  id: ID!
-  name: String!
-  type: String!
-  description: String
-  position: Position
-  properties: [Property!]
-  links: [Link!]
-  # Specific attributes for Equipment
-  attributes: EquipmentAttributes
-}
+  input UpdateLinkInput {
+    properties: [PropertyInput!]
+  }
 
-type Process implements Entity {
-  id: ID!
-  name: String!
-  type: String!
-  description: String
-  position: Position
-  properties: [Property!]
-  links: [Link!]
-  # Specific attributes for Processes
-  attributes: ProcessAttributes
-}
-
-type Facility implements Entity {
-  id: ID!
-  name: String!
-  type: String!
-  description: String
-  position: Position
-  properties: [Property!]
-  links: [Link!]
-  # Specific attributes for Facilities
-  attributes: FacilityAttributes
-}
-
-type EquipmentTemplate {
-  id: ID!
-  name: String!
-  type: String!
-  properties: [Property!]
-}
-
-type Link {
-  id: ID!
-  source: ID!
-  target: ID!
-  type: String!
-  properties: [Property!]
-}
-
-type GraphEntity {
-  id: ID!
-  name: String
-  type: String
-  properties: [Property!]
-}
-
-# Supporting Types
-
-type Property {
-  key: String!
-  value: String!
-}
-
-type Position {
-  x: Float!
-  y: Float!
-}
-
-# Attribute Types (Based on Ontology)
-
-type EquipmentAttributes {
-  flow_rate: String
-  power: String
-  discharge_pressure: String
-}
-
-type ProcessAttributes {
-  pressure: String
-  temperature: String
-  efficiency: Float
-}
-
-type FacilityAttributes {
-  capacity: String
-  contents: String
-}
-
-# Input Types
-
-input AddEntityInput {
-  name: String!
-  type: String!
-  position: PositionInput
-  properties: [PropertyInput!]
-  attributes: AttributesInput
-}
-
-input UpdateEntityInput {
-  name: String
-  type: String
-  position: PositionInput
-  properties: [PropertyInput!]
-  attributes: AttributesInput
-}
-
-input PropertyInput {
-  key: String!
-  value: String!
-}
-
-input PositionInput {
-  x: Float!
-  y: Float!
-}
-
-input AttributesInput {
-  flow_rate: String
-  power: String
-  discharge_pressure: String
-  pressure: String
-  temperature: String
-  efficiency: Float
-  capacity: String
-  contents: String
-}
-
-input CreateLinkInput {
-  source: ID!
-  target: ID!
-  type: String!
-  properties: [PropertyInput!]
-}
-
-input UpdateLinkInput {
-  properties: [PropertyInput!]
-}
-
-# Filtering input type (might change in future)
-input EntityFilterInput {
-  type: String
-  name: String
-  attributeKey: String
-  attributeValue: String
-}
-
-input NewTemplateInput {
-  name: String!
-  type: String!
-  properties: [PropertyInput!]
-}
-
+  input EntityFilterInput {
+    type: String
+    name: String
+    attributeKey: String
+    attributeValue: String
+  }
 `;

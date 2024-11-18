@@ -1,6 +1,6 @@
-const { gql } = require('apollo-server-express');
+import { gql } from 'apollo-server-express';
 
-const typeDefs = gql`
+export const typeDefs = gql`
   type Node {
     id: ID!
     name: String!
@@ -26,5 +26,3 @@ const typeDefs = gql`
     removePipe(id: ID!): Pipe
   }
 `;
-
-module.exports = typeDefs;

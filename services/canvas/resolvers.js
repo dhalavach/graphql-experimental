@@ -1,9 +1,9 @@
-const { sendToMessageBroker } = require('./messageBroker');
+import { sendToMessageBroker } from './messageBroker.js';
 
 const nodes = [];
 const pipes = [];
 
-const resolvers = {
+export const resolvers = {
   Query: {
     nodes: () => nodes,
     pipes: () => pipes,
@@ -53,5 +53,3 @@ const resolvers = {
     },
   },
 };
-
-module.exports = resolvers;

@@ -1,6 +1,12 @@
 import { Driver, Session } from 'neo4j-driver';
 
 export const resolvers = (driver) => ({
+  Entity: {
+    __resolveType(obj) {
+      return 'Equipment'; //fuck this - will implement a proper resolver later
+    },
+  },
+
   Query: {
     async entities(_, { filter }) {
       const session = driver.session();
@@ -20,11 +26,11 @@ export const resolvers = (driver) => ({
 
     async entityById(_, { id }) {
       const session = driver.session();
-      const query = 'MATCH (e:Entity {id: $id}) RETURN e';
+      const query = 'MATCH (n {id: $id}) RETURN n';
       try {
         const result = await session.run(query, { id });
         const record = result.records[0];
-        return record ? record.get('e').properties : null;
+        return record ? record.get('n').properties : null;
       } finally {
         await session.close();
       }
@@ -32,26 +38,20 @@ export const resolvers = (driver) => ({
   },
 
   Mutation: {
-    async addEntity(_, { name, type, position, properties, attributes }) {
+    async addEntity(_, { name, type }) {
       const session = driver.session();
       const query = `
         CREATE (e:Entity {
           id: randomUUID(),
           name: $name,
-          type: $type,
-          position: $position,
-          properties: $properties,
-          attributes: $attributes
+          type: $type
         })
         RETURN e
       `;
       try {
         const result = await session.run(query, {
           name,
-          type,
-          position,
-          properties,
-          attributes,
+          type
         });
         return result.records[0].get('e').properties;
       } finally {
