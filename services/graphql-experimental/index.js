@@ -1,6 +1,13 @@
-const { Neo4jGraphQL } = require('@neo4j/graphql');
-const neo4j = require('neo4j-driver');
-const { ApolloServer } = require('apollo-server');
+import { Neo4jGraphQL } from '@neo4j/graphql';
+import { driver as _driver, auth } from 'neo4j-driver';
+import { ApolloServer } from 'apollo-server';
+import fs from 'node:fs/promises';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 //original typeDefs from neo4j/graphql documentation
 
@@ -18,18 +25,16 @@ const { ApolloServer } = require('apollo-server');
 //     }
 // `;
 
-const typeDefs = `
-  type Book {
-    id: String
-    title: String!
-    author: String!
-  }
+const typeDefs = await fs.readFile(path.join(__dirname, 'schemaWithoutInterfaces.graphql'), {
+  encoding: 'utf-8',
+});
 
-`;
+const driver = _driver('bolt://localhost:7687', auth.basic('neo4j', 'Casablanca'));
 
-const driver = neo4j.driver('bolt://localhost:7687', neo4j.auth.basic('neo4j', 'Casablanca'));
-
-const neoSchema = new Neo4jGraphQL({ typeDefs, driver });
+const neoSchema = new Neo4jGraphQL({
+  typeDefs,
+  driver,
+});
 
 async function main() {
   const schema = await neoSchema.getSchema();
