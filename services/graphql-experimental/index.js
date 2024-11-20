@@ -25,7 +25,7 @@ const __dirname = dirname(__filename);
 //     }
 // `;
 
-const typeDefs = await fs.readFile(path.join(__dirname, 'schemaWithoutInterfaces.graphql'), {
+const typeDefs = await fs.readFile(path.join(__dirname, 'schema.graphql'), {
   encoding: 'utf-8',
 });
 
