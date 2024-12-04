@@ -1,7 +1,0 @@
-{
-  "className": "StorageTank",
-  "instance": {
-    "capacity": "1000",
-    "contents": "oil"
-  }
-}
