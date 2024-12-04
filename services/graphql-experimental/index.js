@@ -9,27 +9,13 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-//original typeDefs from neo4j/graphql documentation
-
-// const typeDefs = `
-//     type Movie {
-//         title: String
-//         year: Int
-//         imdbRating: Float
-//         genres: [Genre!]! @relationship(type: "IN_GENRE", direction: OUT)
-//     }
-
-//     type Genre {
-//         name: String
-//         movies: [Movie!]! @relationship(type: "IN_GENRE", direction: IN)
-//     }
-// `;
-
+//adjust path to schema, if necessary
 const typeDefs = await fs.readFile(path.join(__dirname, 'schema.graphql'), {
   encoding: 'utf-8',
 });
 
-const driver = _driver('bolt://localhost:7687', auth.basic('neo4j', 'Casablanca'));
+//adjust port, login, password, if necessary
+const driver = _driver('bolt://localhost:7687', auth.basic('neo4j', 'password'));
 
 const neoSchema = new Neo4jGraphQL({
   typeDefs,
@@ -45,7 +31,6 @@ async function main() {
   });
 
   await server.listen(4000);
-
   console.log('Listening at 4000');
 }
 main();
