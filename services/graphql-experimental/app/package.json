@@ -1,0 +1,28 @@
+{
+  "name": "graphql-experimental",
+  "type": "commonjs",
+  "version": "1.0.0",
+  "description": "experimental version to try out auto-generated resolvers",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@neo4j/graphql": "^6.1.0",
+    "apollo-server": "^3.13.0",
+    "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
+    "graphql": "^16.9.0",
+    "neo4j": "^2.0.0-RC2",
+    "neo4j-driver": "^5.26.0",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/semver": "^7.5.8"
+  }
+}

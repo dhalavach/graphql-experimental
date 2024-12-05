@@ -1,0 +1,246 @@
+# GraphQL schema for Neo4j access and Canvas integration. V.1.0.0
+
+# Enums for measurement units
+
+enum PressureUnit {
+  PSI # Pounds per square inch
+  BAR # Bar. 1 bar = 100 000 PA
+  PA # Pascal
+  MPA #Megapascal
+}
+
+enum TemperatureUnit {
+  C # Celsius
+  F # Fahrenheit
+  K # Kelvin
+}
+
+enum VolumeUnit {
+  BARREL
+  CUBIC_METER
+  LITER
+}
+
+enum FlowRateUnit {
+  M3_H # Cubic meters per hour
+  BBL_DAY # Barrels per day
+  GPM # Gallons per minute
+}
+
+# Reusable types
+
+# @query directive excludes the interface the autogeneration
+# of API enpoints(types) by @neo4j/graphl library. Remove or replace if necessary
+
+#2D position on Canvas
+type PositionDTO @query(read: false, aggregate: false) {
+  x: Float!
+  y: Float!
+}
+
+type InputEntity @query(read: false, aggregate: false) {
+  id: ID!
+  name: String!
+  description: String
+}
+
+type OutputEntity @query(read: false, aggregate: false) {
+  id: ID!
+  name: String!
+  description: String
+}
+
+# Common interfaces for metadata, position, and flow relationships
+
+interface Metadata @query(read: false, aggregate: false) {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+}
+
+#this interface is not used for now
+interface EntityRecognitionLinks @query(read: false, aggregate: false) {
+  identical_to_entity: String
+  similar_to_entity: String
+  similarity_score: Float
+}
+
+interface Position @query(read: false, aggregate: false) {
+  position: PositionDTO
+}
+
+interface HasInput @query(read: false, aggregate: false) {
+  inputs: [InputEntity]
+}
+
+interface HasOutput @query(read: false, aggregate: false) {
+  outputs: [OutputEntity]
+}
+
+# Interfaces for abstract types
+interface Equipment implements Metadata & Position {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+}
+
+interface Process implements Metadata & Position & HasInput & HasOutput {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  inputs: [InputEntity]
+  outputs: [OutputEntity]
+}
+
+interface Facility implements Equipment & Metadata & Position {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+}
+
+interface MeasurementDevice implements Equipment & Metadata & Position {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  reading: Float
+  measurement_unit: String
+}
+
+# Types for specific classes with attributes
+type StorageTank implements Facility & Equipment & Metadata & Position {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  capacity: Float
+  capacity_measure_unit: VolumeUnit
+  contents: String
+  identical_to_entity: StorageTank @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type Separator implements Process & Metadata & Position & HasInput & HasOutput {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  inputs: [InputEntity]
+  outputs: [OutputEntity]
+  pressure: Float
+  pressure_measure_unit: PressureUnit
+  temperature: Float
+  temperature_measure_unit: TemperatureUnit
+  separation_efficiency: Float
+  identical_to_entity: Separator @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type GasWell implements Equipment & Metadata & Position & HasOutput {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  outputs: [OutputEntity!]!
+  pressure: Float
+  pressure_measure_unit: PressureUnit
+  flow_rate: Float
+  flow_rate_measure_unit: FlowRateUnit
+  depth: String
+  identical_to_entity: GasWell @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type Compressor implements Equipment & Metadata & Position & HasInput & HasOutput {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  inlet_pressure: String
+  inlet_pressure_measure_unit: PressureUnit
+  outlet_pressure: String
+  outlet_pressure_measure_unit: PressureUnit
+  power_consumption: String
+  inputs: [InputEntity]
+  outputs: [OutputEntity]
+  # identical_to_entity: Compressor @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type GasProcessingPlant implements Facility & Metadata & Position & Equipment & HasInput & HasOutput {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  throughput_capacity: String
+  ngl_recovery_rate: Float
+  inputs: [InputEntity]
+  outputs: [OutputEntity]
+  identical_to_entity: GasProcessingPlant @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type NGLFractionationUnit implements Process & Metadata & Position & HasInput & HasOutput {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  inputs: [InputEntity]
+  outputs: [OutputEntity]
+  feed_rate: String
+  ethane_recovery_rate: Float
+  propane_recovery_rate: Float
+  reboiler_duty: String
+  identical_to_entity: NGLFractionationUnit @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  sensor_type: String
+  reading: Float
+  measurement_unit: String
+  accuracy: Float
+  similar_to_entity: String
+  similarity_score: Float
+  identical_to_entity: Sensor @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+type Pump implements Equipment & Metadata & Position {
+  id: ID!
+  name: String!
+  webid: String
+  parent: String
+  description: String
+  position: PositionDTO
+  flow_rate: Float
+  flow_rate_measure_unit: FlowRateUnit
+  power: String
+  discharge_pressure: Float
+  discharge_pressure_measure_unit: PressureUnit
+  identical_to_entity: Pump @relationship(type: "IDENTICAL", direction: OUT)
+}
