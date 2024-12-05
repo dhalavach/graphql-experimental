@@ -1,9 +1,9 @@
 FROM node:23-alpine 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/
 COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
-COPY schema.graphql ./app/dist/
+COPY schema.graphql ./dist
 EXPOSE 4000
-CMD ["node", "app/dist/index.js"]
+CMD ["node", "dist/index.js"]
