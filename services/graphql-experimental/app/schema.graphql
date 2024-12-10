@@ -27,6 +27,53 @@ enum FlowRateUnit {
   GPM # Gallons per minute
 }
 
+enum EquipmentType {
+  UNPROCESSED
+  STORAGE_TANK
+  SEPARATOR
+  GAS_WELL
+  COMPRESSOR
+  GAS_PROCESSING_PLANT
+  NGL_FRACTIONATION_UNIT
+  SENSOR
+  PUMP
+}
+
+# Enums for messages
+
+enum MessageType {
+  SENSOR_READING
+  ALERT
+  EQUIPMENT_CRUD_OPERATION
+  EQUIPMENT_TEMPLATE
+  EQUIPMENT_UPDATE
+  EQUIPMENT_RELATIONS_UPDATE
+  INCIDENT_REPORT
+  MAINTENANCE_SCHEDULE
+  WORK_ORDER
+  PRODUCTION_REPORT
+}
+
+enum ReadingQualityIndicator {
+  GOOD
+  SUSPECT
+  BAD
+}
+
+enum SeverityIndicator {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum EquipmentCrudOperationType {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
 # Reusable types
 
 # @query directive excludes the interface the autogeneration
@@ -83,6 +130,7 @@ interface HasOutput @query(read: false, aggregate: false) {
 interface Equipment implements Metadata & Position {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -103,6 +151,7 @@ interface Process implements Metadata & Position & HasInput & HasOutput {
 interface Facility implements Equipment & Metadata & Position {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -112,6 +161,7 @@ interface Facility implements Equipment & Metadata & Position {
 interface MeasurementDevice implements Equipment & Metadata & Position {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -120,10 +170,17 @@ interface MeasurementDevice implements Equipment & Metadata & Position {
   measurement_unit: String
 }
 
+interface Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+}
+
 # Types for specific classes with attributes
 type StorageTank implements Facility & Equipment & Metadata & Position {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -137,6 +194,7 @@ type StorageTank implements Facility & Equipment & Metadata & Position {
 type Separator implements Process & Metadata & Position & HasInput & HasOutput {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -154,11 +212,12 @@ type Separator implements Process & Metadata & Position & HasInput & HasOutput {
 type GasWell implements Equipment & Metadata & Position & HasOutput {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
   position: PositionDTO
-  outputs: [OutputEntity!]!
+  outputs: [OutputEntity]
   pressure: Float
   pressure_measure_unit: PressureUnit
   flow_rate: Float
@@ -170,6 +229,7 @@ type GasWell implements Equipment & Metadata & Position & HasOutput {
 type Compressor implements Equipment & Metadata & Position & HasInput & HasOutput {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -187,6 +247,7 @@ type Compressor implements Equipment & Metadata & Position & HasInput & HasOutpu
 type GasProcessingPlant implements Facility & Metadata & Position & Equipment & HasInput & HasOutput {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -201,6 +262,7 @@ type GasProcessingPlant implements Facility & Metadata & Position & Equipment & 
 type NGLFractionationUnit implements Process & Metadata & Position & HasInput & HasOutput {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -217,6 +279,7 @@ type NGLFractionationUnit implements Process & Metadata & Position & HasInput & 
 type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -233,6 +296,7 @@ type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
 type Pump implements Equipment & Metadata & Position {
   id: ID!
   name: String!
+  type: EquipmentType!
   webid: String
   parent: String
   description: String
@@ -243,4 +307,104 @@ type Pump implements Equipment & Metadata & Position {
   discharge_pressure: Float
   discharge_pressure_measure_unit: PressureUnit
   identical_to_entity: Pump @relationship(type: "IDENTICAL", direction: OUT)
+}
+
+# Message types
+type SensorReading implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  equipment_id: String!
+  value: Float
+  measurement_unit: String
+  quality_indicator: ReadingQualityIndicator
+}
+
+type Alert implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  equipment_id: String!
+  alert_type: String
+  severity: SeverityIndicator
+}
+
+type EquipmentCrudOperation implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  operation_type: EquipmentCrudOperationType!
+  equipment_id: String!
+  user: String
+  additional_data: String
+}
+
+type EquipmentTemplate implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  equipment_id: String!
+  manufacturer: String
+  model: String
+  template: String # this should be a data transfer object, but it is too complex for now
+}
+
+#update some property of existing equipment
+type EquipmentUpdate implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  equipment_id: String!
+  update_type: String!
+  updated_value: String!
+  user: String
+}
+
+type EquipmentRelationsUpdate implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  equipment_id: String!
+  relationship_type: String!
+  related_equipment_id: String!
+  change_description: String
+}
+
+type IncidentReport implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  incident_type: String!
+  description: String!
+  equipment_id: String
+}
+
+type MaintenanceSchedule implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  equipment_id: String!
+  maintenance_type: String!
+  frequency: String
+  next_due_date: String
+}
+
+type WorkOrder implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  description: String!
+  equipment_id: String!
+  status: String
+  scheduled_start: String
+  scheduled_end: String
+}
+
+type ProductionReport implements Message {
+  message_id: String!
+  message_type: MessageType!
+  timestamp: String
+  production_date: String!
+  total_output: String!
+  equipment_id: String!
 }
