@@ -2,3 +2,14 @@ go to app directory
 run `docker-compose up --build`
 access Apollo Studio to inspect the GraphQL API and work with Neo4j database in browser
 by default, it is at: http://localhost:4000/
+
+access Neo4j Browser at http://localhost:7474/browser/
+default login: neo4j
+default password: password
+
+to get all nodes, run something like
+
+```
+MATCH (n)
+RETURN n
+```
