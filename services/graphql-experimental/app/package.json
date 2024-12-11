@@ -1,12 +1,13 @@
 {
   "name": "graphql-experimental",
-  "type": "commonjs",
+  "type": "module",
   "version": "1.0.0",
-  "description": "experimental version to try out auto-generated resolvers",
+  "description": "experimental Apollo Server with Neo4j GraphQL library",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "start:build": "tsc && node dist/index.js",
     "docker:pull": "docker-compose -f docker-compose-pull.yml up",
     "docker:build": "docker-compose up"
   },
@@ -16,7 +17,7 @@
   "dependencies": {
     "@neo4j/graphql": "^6.1.0",
     "apollo-server": "^3.13.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "fs": "^0.0.1-security",
     "graphql": "^16.9.0",
     "neo4j": "^2.0.0-RC2",

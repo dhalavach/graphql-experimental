@@ -131,7 +131,7 @@ type StorageTank implements Facility & Equipment & Metadata & Position {
   capacity: Float
   capacity_measure_unit: VolumeUnit
   contents: String
-  identical_to_entity: StorageTank @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: StorageTank @relationship(type: "IDENTICAL", direction: OUT)
 }
 
 type Separator implements Process & Metadata & Position & HasInput & HasOutput {
@@ -148,7 +148,7 @@ type Separator implements Process & Metadata & Position & HasInput & HasOutput {
   temperature: Float
   temperature_measure_unit: TemperatureUnit
   separation_efficiency: Float
-  identical_to_entity: Separator @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: Separator @relationship(type: "IDENTICAL", direction: OUT)
 }
 
 type GasWell implements Equipment & Metadata & Position & HasOutput {
@@ -164,7 +164,7 @@ type GasWell implements Equipment & Metadata & Position & HasOutput {
   flow_rate: Float
   flow_rate_measure_unit: FlowRateUnit
   depth: String
-  identical_to_entity: GasWell @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: GasWell @relationship(type: "IDENTICAL", direction: OUT)
 }
 
 type Compressor implements Equipment & Metadata & Position & HasInput & HasOutput {
@@ -195,7 +195,7 @@ type GasProcessingPlant implements Facility & Metadata & Position & Equipment & 
   ngl_recovery_rate: Float
   inputs: [InputEntity]
   outputs: [OutputEntity]
-  identical_to_entity: GasProcessingPlant @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: GasProcessingPlant @relationship(type: "IDENTICAL", direction: OUT)
 }
 
 type NGLFractionationUnit implements Process & Metadata & Position & HasInput & HasOutput {
@@ -211,7 +211,7 @@ type NGLFractionationUnit implements Process & Metadata & Position & HasInput & 
   ethane_recovery_rate: Float
   propane_recovery_rate: Float
   reboiler_duty: String
-  identical_to_entity: NGLFractionationUnit @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: NGLFractionationUnit
 }
 
 type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
@@ -227,7 +227,7 @@ type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
   accuracy: Float
   similar_to_entity: String
   similarity_score: Float
-  identical_to_entity: Sensor @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: Sensor @relationship(type: "IDENTICAL", direction: OUT)
 }
 
 type Pump implements Equipment & Metadata & Position {
@@ -242,5 +242,5 @@ type Pump implements Equipment & Metadata & Position {
   power: String
   discharge_pressure: Float
   discharge_pressure_measure_unit: PressureUnit
-  identical_to_entity: Pump @relationship(type: "IDENTICAL", direction: OUT)
+  #identical_to_entity: Pump @relationship(type: "IDENTICAL", direction: OUT)
 }

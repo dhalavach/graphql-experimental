@@ -21,7 +21,7 @@ services:
       - app_network
 
   app:
-    image: kopfmann/graphql-server # Replace with the actual image name
+    image: kopfmann/graphql-server 
     container_name: graphql-app
     ports:
       - '4000:4000' # The GraphQL API and Apollo Studio

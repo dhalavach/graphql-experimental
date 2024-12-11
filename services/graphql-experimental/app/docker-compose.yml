@@ -21,8 +21,9 @@ services:
       - app_network
 
   app:
-    image: kopfmann/graphql-server # Replace with the actual image name
-    container_name: graphql-app
+    build:
+      context: .
+    container_name: graphql-server
     ports:
       - '4000:4000' # The GraphQL API and Apollo Studio
     depends_on:
@@ -30,8 +31,10 @@ services:
         condition: service_healthy # Wait until Neo4j is healthy
     environment:
       - NEO4J_URI=bolt://neo4j:7687
-      - NEO4J_USER=neo4j
+      - NEO4J_BOLT_PORT=7687
+      - NEO4J_LOGIN=neo4j
       - NEO4J_PASSWORD=password
+      - APOLLO_HTTP_PORT=4000
     volumes:
       - ./config:/usr/src/app/config 
     networks:
