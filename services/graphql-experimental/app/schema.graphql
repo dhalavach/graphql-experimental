@@ -33,10 +33,11 @@ enum FlowRateUnit {
 # of API enpoints(types) by @neo4j/graphl library. Remove or replace if necessary
 
 #2D position on Canvas
-type PositionDTO @query(read: false, aggregate: false) {
-  x: Float!
-  y: Float!
-}
+#doesn't work properly with Neo4j GraphQL autogeneration
+# type PositionDTO @query(read: false, aggregate: false) {
+#   x: Float!
+#   y: Float!
+# }
 
 type InputEntity @query(read: false, aggregate: false) {
   id: ID!
@@ -68,7 +69,8 @@ interface EntityRecognitionLinks @query(read: false, aggregate: false) {
 }
 
 interface Position @query(read: false, aggregate: false) {
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
 }
 
 interface HasInput @query(read: false, aggregate: false) {
@@ -86,7 +88,8 @@ interface Equipment implements Metadata & Position {
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
 }
 
 interface Process implements Metadata & Position & HasInput & HasOutput {
@@ -95,7 +98,8 @@ interface Process implements Metadata & Position & HasInput & HasOutput {
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   inputs: [InputEntity]
   outputs: [OutputEntity]
 }
@@ -106,7 +110,8 @@ interface Facility implements Equipment & Metadata & Position {
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
 }
 
 interface MeasurementDevice implements Equipment & Metadata & Position {
@@ -115,7 +120,8 @@ interface MeasurementDevice implements Equipment & Metadata & Position {
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   reading: Float
   measurement_unit: String
 }
@@ -127,7 +133,8 @@ type StorageTank implements Facility & Equipment & Metadata & Position {
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   capacity: Float
   capacity_measure_unit: VolumeUnit
   contents: String
@@ -140,7 +147,8 @@ type Separator implements Process & Metadata & Position & HasInput & HasOutput {
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   inputs: [InputEntity]
   outputs: [OutputEntity]
   pressure: Float
@@ -151,14 +159,16 @@ type Separator implements Process & Metadata & Position & HasInput & HasOutput {
   #identical_to_entity: Separator @relationship(type: "IDENTICAL", direction: OUT)
 }
 
+#the type that only has outputs and no input
 type GasWell implements Equipment & Metadata & Position & HasOutput {
   id: ID!
   name: String!
   webid: String
   parent: String
   description: String
-  position: PositionDTO
-  outputs: [OutputEntity!]!
+  position_x: Float
+  position_y: Float
+  outputs: [OutputEntity]
   pressure: Float
   pressure_measure_unit: PressureUnit
   flow_rate: Float
@@ -173,7 +183,8 @@ type Compressor implements Equipment & Metadata & Position & HasInput & HasOutpu
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   inlet_pressure: String
   inlet_pressure_measure_unit: PressureUnit
   outlet_pressure: String
@@ -190,7 +201,8 @@ type GasProcessingPlant implements Facility & Metadata & Position & Equipment & 
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   throughput_capacity: String
   ngl_recovery_rate: Float
   inputs: [InputEntity]
@@ -204,7 +216,8 @@ type NGLFractionationUnit implements Process & Metadata & Position & HasInput & 
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   inputs: [InputEntity]
   outputs: [OutputEntity]
   feed_rate: String
@@ -214,13 +227,15 @@ type NGLFractionationUnit implements Process & Metadata & Position & HasInput & 
   #identical_to_entity: NGLFractionationUnit
 }
 
+#the type with no inputs or outputs
 type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
   id: ID!
   name: String!
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
   sensor_type: String
   reading: Float
   measurement_unit: String
@@ -230,13 +245,16 @@ type Sensor implements MeasurementDevice & Equipment & Metadata & Position {
   #identical_to_entity: Sensor @relationship(type: "IDENTICAL", direction: OUT)
 }
 
-type Pump implements Equipment & Metadata & Position {
+type Pump implements Equipment & Metadata & Position & HasInput & HasOutput {
   id: ID!
   name: String!
   webid: String
   parent: String
   description: String
-  position: PositionDTO
+  position_x: Float
+  position_y: Float
+  inputs: [InputEntity]
+  outputs: [OutputEntity]
   flow_rate: Float
   flow_rate_measure_unit: FlowRateUnit
   power: String
